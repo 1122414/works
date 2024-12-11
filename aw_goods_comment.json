@@ -1,0 +1,29 @@
+[
+    {
+        "vendor": "pt",
+        "platform": "tor",
+        "push_time": 1715243923,
+        "uuid": "84e26aac05be8acf96b523a1ec71f9ed",
+        "table_type": "goods_comment",
+        "data": {
+            "spider_name": "plastic_market_spider",
+            "domain": "plastic4xuqjt52uwbmxsbyrwor3garq4t5kvpes4i6hfmfyufkf54qd.onion",
+            "net_type": "tor",
+            "url": "http://plastic4xuqjt52uwbmxsbyrwor3garq4t5kvpes4i6hfmfyufkf54qd.onion/reviews/",
+            "user_id": "Cristian",
+            "user_name": "Cristian",
+            "commented_id": "Wells Fargo Visa Classic 1 card 2231.00 USD 150.00 USD ",
+            "comment_id": "Cristian",
+            "comment_type": "goods",
+            "raw_content": "<table width=\"100%\" border=\"0\" cellspacing=\"10\" cellpadding=\"0\">\n      <tr valign=\"top\">\n        <td width=\"15%\" align=\"left\"><img src=\"stars/five-stars.png\" width=\"105\" height=\"20\"></td>\n        <td width=\"15%\" align=\"left\">Cristian</td>\n        <td width=\"30%\" align=\"left\">Very fast delivery and the card worked exactly as promised.</td>\n        <td width=\"30%\" align=\"left\">Wells Fargo Visa Classic 1 card 2231.00 USD 150.00 USD </td>\n        <td width=\"15%\" align=\"right\">2024-05-08</td>\n      </tr>\n    </table>",
+            "content": "Very fast delivery and the card worked exactly as promised.",
+            "publish_time": "2024-05-08T00:00:00",
+            "raw_publish_time": "2024-05-08T00:00:00",
+            "crawl_time": "2024-05-09T08:38:43",
+            "gmt_create": "2024-05-09T08:38:43",
+            "gmt_modified": "2024-05-09T08:38:43",
+            "pages_uuid": "3effaff3a491e5e94fec1be946df7eb8",
+            "site_uuid": "38481bc8773dfabcda41ec67565a9ccb"
+        }
+    }
+]

@@ -1,0 +1,36 @@
+[
+    {
+        "vendor": "pt",
+        "platform": "tor",
+        "push_time": 1715244022,
+        "uuid": "6df5b0d1a31b663e5bb6db4576cb34cd",
+        "table_type": "topic",
+        "data": {
+            "comment_id": "33585",
+            "domain": "bestteermb42clir6ux7xm76d4jjodh3fpahjqgbddbmfrgp4skg2wqd.onion",
+            "url": "http://bestteermb42clir6ux7xm76d4jjodh3fpahjqgbddbmfrgp4skg2wqd.onion/viewtopic.php?f=48&t=8005",
+            "topic_type": "comment",
+            "title": "ENCRYPTION PART 1 - PGP",
+            "content": "great txt!",
+            "raw_content": "<div class=\"content\">great txt!</div>",
+            "emails": [],
+            "bitcoin_addresses": [],
+            "eth_addresses": [],
+            "user_id": "20848",
+            "crawl_time": "2024-05-09T08:40:22",
+            "user_name": "peca08",
+            "topic_id": "8005",
+            "commented_user_id": null,
+            "raw_publish_time": "Mon Jan 29, 2024 12:25 am",
+            "publish_time": "2024-01-29T12:25:00",
+            "net_type": "tor",
+            "spider_name": "onion_bestcardingworld_bbs_spider",
+            "gmt_create": "2024-05-09T08:40:22",
+            "gmt_modified": "2024-05-09T08:40:22",
+            "is_analyzed": false,
+            "is_extracted": false,
+            "pages_uuid": "dce47d909c4777d814aefb3b23c18d28",
+            "site_uuid": "cf37f12daea2e8833c25683019c42f24"
+        }
+    }
+]
