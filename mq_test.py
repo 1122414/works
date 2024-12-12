@@ -78,6 +78,7 @@ class MQ:
                 #     self.send_data.append({"queue":"goods", "data":good})
 
             print(f"接收数据{data['table_type']}")
+            ch.basic_ack(delivery_tag=method.delivery_tag)
             mq.mqSend()
 
 
