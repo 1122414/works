@@ -18,34 +18,79 @@ class MQ:
         self.send_username = "spider"
         self.send_password = "spider"
 
-        self.recvMQ = self.mqinit(self.recv_ip, self.recv_port, self.recv_username, self.recv_password, "/anwang4")
-        self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password, "/")
-
         # self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods" , "aw_goods_comment"]
         self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods"]
+        
+        self.connection()
 
     def mqinit(self,ip, port, username, password, vhost):
         credentials = pika.PlainCredentials(username, password)
         connection = pika.BlockingConnection(pika.ConnectionParameters(ip, port, vhost, credentials))
         return connection.channel()
 
-    def mqRecv(self):
-        for recv_key in self.recv_keys:
-            self.recvMQ.queue_declare(queue=recv_key, durable=True)
-            self.recvMQ.basic_consume(queue=recv_key, on_message_callback=self.recv, auto_ack=False)
+    def connection(self):
+        self.recvMQ = self.mqinit(self.recv_ip, self.recv_port, self.recv_username, self.recv_password, "/anwang4")
+        self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password, "/")
 
-        self.recvMQ.start_consuming()
+    def mqRecv(self):
+        while True:
+            try:
+                for recv_key in self.recv_keys:
+                    self.recvMQ.queue_declare(queue=recv_key, durable=True)
+                    self.recvMQ.basic_consume(queue=recv_key, on_message_callback=self.recv, auto_ack=False)
+
+                self.recvMQ.start_consuming()
+            except:
+                self.close()
+                self.connection()
 
     def recv(self, ch, method, properties, body):
         try:
             data = json.loads(body.decode('utf-8'))
-            self.recv_data.append(data)
-            self.send()
+
+            if data["table_type"] == "page":
+                page, site = aw_transfer.page2(data)
+                if page:
+                    self.send_data.append({"queue":"page", "data":page})
+                if site:
+                    self.send_data.append({"queue":"site", "data":site})
+
+            if data["table_type"] == "user":
+                user = aw_transfer.user2(data)
+                if user:
+                    self.send_data.append({"queue":"user", "data":user})
+
+            if data["table_type"] == "goods":
+                good = aw_transfer.good2(data)
+                if good:
+                    self.send_data.append({"queue":"goods", "data":good})
+            
+            if data["table_type"] == "topic":
+                post = aw_transfer.post2(data)
+                if post:
+                    self.send_data.append({"queue":"post", "data":post})
+
+            if data["table_type"] == "goods_comment":
+                pass
+                # NOTE comment 数据有问题
+                # good = aw_transfer.goodComment2(good,data)
+                # if good:
+                #     self.send_data.append({"queue":"goods", "data":good})
+
+            print(f"接收数据{data['table_type']}")
+            mq.mqSend()
+
+
+
+            # self.recv_data.append(data)
+            # self.send()
         except Exception as e:
             print(f"ERROR: recv data: {e} ")
 
     def send(self):
-        while self.recv_data:
+        recv_len = len(self.recv_data)
+        while recv_len:
+            recv_len -= 1
             data = self.recv_data.pop(0)
 
             if data["table_type"] == "page":
@@ -124,5 +169,7 @@ if __name__ == "__main__":
     try:
         mq.mqRecv()
     except Exception as e:
-        mq.close()
         print(f"ERROR: {e}")
+        mq.close()
+        mq.connection()
+        mq.mqRecv()
