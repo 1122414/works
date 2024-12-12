@@ -120,7 +120,10 @@ def page2(page):
         apage["meta"] = ""
     apage["net_type"] = page["net_type"]
     apage["page_source"] = page["page_source"]
-    apage["title"] = page["title"]
+    try:
+        apage["title"] = page["title"]
+    except:
+        apage["title"] = ""
     apage["url"] = page["url"]
     apage["publish_time"] = page["crawl_time"]
     try:
@@ -256,7 +259,7 @@ def post2(topic):
     try:
         post["title"] = topic["title"]
     except:
-        pass
+        post["title"] = ""
 
     try:
         post["comment_id"] = topic["comment_id"]
