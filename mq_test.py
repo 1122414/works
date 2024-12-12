@@ -76,7 +76,8 @@ class MQ:
                 # good = aw_transfer.goodComment2(good,data)
                 # if good:
                 #     self.send_data.append({"queue":"goods", "data":good})
-        # print(self.send_data[-1])
+
+            print(f"接收数据{data['table_type']}")
         mq.mqSend()
 
     def mqSend(self):
@@ -100,6 +101,7 @@ class MQ:
 
                 # 发布消息到队列
                 self.sendMQ.basic_publish(exchange='', routing_key=routing_key, body=message)
+                print(f"发送数据{routing_key}")
 
             except Exception as e:
                 print("mq通道关闭" + str(e))

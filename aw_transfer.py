@@ -20,6 +20,7 @@ def openjson(file):
 def site2(page):
     if page["table_type"] != "page":
         return None
+
     site = {
             "domain" : "",
             "net_type" : "",
@@ -188,7 +189,6 @@ def user2(user):
     auser["uuid"] = calculate_sha1(user["domain"]+user["user_id"])
     # auser["uuid"] = user["uuid"]
     auser["domain"] = user["url"][:user["url"].index("//")+2]+user["domain"]
-    apage["domain"] = page["url"][:page["url"].index("//")+2]+page["domain"]
     auser["net_type"] = user["net_type"]
     auser["user_name"] = user["user_name"]
     auser["user_id"] = user["user_id"]
