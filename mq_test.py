@@ -18,19 +18,15 @@ class MQ:
         self.send_username = "spider"
         self.send_password = "spider"
 
-        self.recvMQ = self.mqinit(self.recv_ip, self.recv_port, self.recv_username, self.recv_password)
-        self.sendMQ = self.mqinit_send(self.send_ip, self.send_port, self.send_username, self.send_password)
+        self.recvMQ = self.mqinit(self.recv_ip, self.recv_port, self.recv_username, self.recv_password, "/anwang4")
+        self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password, "/")
 
-        self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods" , "aw_goods_comment"]
+        # self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods" , "aw_goods_comment"]
+        self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods"]
 
-    def mqinit(self,ip, port, username, password):
+    def mqinit(self,ip, port, username, password, vhost):
         credentials = pika.PlainCredentials(username, password)
-        connection = pika.BlockingConnection(pika.ConnectionParameters(ip, port, '/anwang4', credentials))
-        return connection.channel()
-    
-    def mqinit_send(self,ip, port, username, password):#TODO 创建新队列
-        credentials = pika.PlainCredentials(username, password)
-        connection = pika.BlockingConnection(pika.ConnectionParameters(ip, port, '/', credentials))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(ip, port, vhost, credentials))
         return connection.channel()
 
     def mqRecv(self):
@@ -49,7 +45,6 @@ class MQ:
             print(f"ERROR: recv data: {e} ")
 
     def send(self):
-        mq.mqSend()
         while self.recv_data:
             data = self.recv_data.pop(0)
 
@@ -82,6 +77,8 @@ class MQ:
                 # if good:
                 #     self.send_data.append({"queue":"goods", "data":good})
         # print(self.send_data[-1])
+        mq.mqSend()
+
     def mqSend(self):
         send_len = len(self.send_data)
         while send_len:
@@ -106,22 +103,24 @@ class MQ:
 
             except Exception as e:
                 print("mq通道关闭" + str(e))
-                self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password)
+                self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password, "/")
                 # TODO 异常处理需要修改，将发送失败数据添加队列
                 self.send_data.append(element)
                 break
                 # self.sendMQ.basic_publish(exchange='', routing_key=routing_key, body=message)
 
     def close(self):
-        self.recvMQ.close()
-        self.sendMQ.close()
+        try:
+            self.recvMQ.close()
+            self.sendMQ.close()
+        except:
+            print("Channel is already closed.")
 
 
 if __name__ == "__main__":
     mq = MQ()
     try:
         mq.mqRecv()
-        # mq.mqSend()
     except Exception as e:
         mq.close()
         print(f"ERROR: {e}")
