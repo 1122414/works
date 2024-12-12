@@ -51,7 +51,7 @@ def site2(page):
             "user_info" : "{}",
     }
 
-    site["domain"] = page["url"][:page["url"].index(page["domain"])]+page["domain"]
+    site["domain"] = page["url"][:page["url"].index("//")+2]+page["domain"]
     site["net_type"] = page["net_type"]
     site["url"] = page["url"]
     site["lang"] = "en_us" if page["language"] == "en" else page["language"]
@@ -108,7 +108,7 @@ def page2(page):
     }
 
     apage["crawl_time"] = page["crawl_time"]
-    apage["domain"] = page["url"][:page["url"].index(page["domain"])]+page["domain"]
+    apage["domain"] = page["url"][:page["url"].index("//")+2]+page["domain"]
     try:
         apage["content_encode"] = page["meta"]["charset"]
     except:
@@ -187,7 +187,8 @@ def user2(user):
 
     auser["uuid"] = calculate_sha1(user["domain"]+user["user_id"])
     # auser["uuid"] = user["uuid"]
-    auser["domain"] = user["url"][:user["url"].index(user["domain"])]+user["domain"]
+    auser["domain"] = user["url"][:user["url"].index("//")+2]+user["domain"]
+    apage["domain"] = page["url"][:page["url"].index("//")+2]+page["domain"]
     auser["net_type"] = user["net_type"]
     auser["user_name"] = user["user_name"]
     auser["user_id"] = user["user_id"]
@@ -250,7 +251,7 @@ def post2(topic):
     post["url"] = topic["url"]
     post["crawl_time"] = topic["crawl_time"]
     post["net_type"] = topic["net_type"]
-    post["domain"] = topic["url"][:topic["url"].index(topic["domain"])]+topic["domain"]
+    post["domain"] = topic["url"][:topic["url"].index("//")+2]+topic["domain"]
     try:
         post["emails"] = str(topic["emails"])
     except:
