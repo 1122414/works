@@ -1,6 +1,16 @@
 import json
 from bs4 import BeautifulSoup
 import re
+import hashlib
+
+
+def calculate_sha1(data):
+    # 创建一个新的sha1 hash对象
+    hash_object = hashlib.sha1()
+    # 提供需要散列的数据
+    hash_object.update(data.encode())
+    # 获取十六进制格式的散列值
+    return hash_object.hexdigest()
 
 def openjson(file):
     with open(file, encoding='utf-8') as jsonfile:
@@ -117,7 +127,7 @@ def page2(page):
 
     site = {}
 
-    if page["domain"] == page["url"]:
+    if page["domain"] == page["url"] or page["domain"] == page["url"][:-1]:
         site = site2(page)
 
     return apage, site
@@ -165,7 +175,8 @@ def user2(user):
             "lang" : "",
     }
 
-    auser["uuid"] = user["uuid"]
+    auser["uuid"] = calculate_sha1(user["domain"]+user["user_id"])
+    # auser["uuid"] = user["uuid"]
     auser["domain"] = user["url"][:user["url"].index(user["domain"])]+user["domain"]
     auser["net_type"] = user["net_type"]
     auser["user_name"] = user["user_name"]
@@ -219,7 +230,8 @@ def post2(topic):
 
     post["uuid"] = topic["uuid"]
     post["post_id"] = topic["uuid"]
-    post["user_id"] = topic["user_id"]
+    # post["user_id"] = topic["user_id"]
+    post["user_id"] = calculate_sha1(topic["domain"]+topic["user_id"])
     post["user_name"] = topic["user_name"]
     post["publish_time"] = topic["publish_time"]
     post["content"] = topic["content"]
@@ -238,7 +250,8 @@ def post2(topic):
     except:
         post["comment_id"] = ""
     try:
-        post["comment_user_id"] = topic["commented_user_id"]
+        # post["comment_user_id"] = topic["commented_user_id"]
+        post["commented_user_id"] = calculate_sha1(topic["domain"]+topic["commented_user_id"])
     except:
         post["comment_user_id"] = ""
     try:
@@ -321,7 +334,8 @@ def good2(goods):
     except:
         good["sku_quantify"] = ""
     good["url"] = goods["url"]
-    good["user_id"] = goods["user_id"]
+    # good["user_id"] = goods["user_id"]
+    good["user_id"] = calculate_sha1(goods["domain"]+goods["user_id"])
     good["user_name"] = goods["user_name"]
 
     return good
@@ -330,7 +344,8 @@ def goodComment2(good,comment):
     if comment["table_type"] != "goods_comment":
         return None
 
-    good["comment_user_id"] = comment["user_id"]
+    # good["comment_user_id"] = comment["user_id"]
+    good["comment_user_id"] = calculate_sha1(comment["domain"]+comment["user_id"])
     good["comment_id"] = comment["comment_id"]
     good["comment_time"] = comment["publish_time"]
     good["comment_content"] = comment["content"]
