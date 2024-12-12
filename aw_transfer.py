@@ -1,4 +1,6 @@
 import json
+from bs4 import BeautifulSoup
+import re
 
 def openjson(file):
     with open(file, encoding='utf-8') as jsonfile:
@@ -103,12 +105,15 @@ def page2(page):
     apage["page_source"] = page["page_source"]
     apage["title"] = page["title"]
     apage["url"] = page["url"]
-    apage["publish_time"] = page["push_time"]
+    apage["publish_time"] = page["crawl_time"]
     try:
         apage["subject"] = page["h1"]
     except:
         apage["subject"] = ""
-    apage["content"] = page["page_source"] # TODO 提取文本
+    soup = BeautifulSoup(page["page_source"], 'html.parser')
+    text = soup.get_text()
+    text = re.sub(r'\n+', '\n', text)
+    apage["content"] = text
 
     site = {}
 
@@ -159,7 +164,7 @@ def user2(user):
             "user_related_crawl_tags" : "",
             "lang" : "",
     }
-    
+
     auser["uuid"] = user["uuid"]
     auser["domain"] = user["url"][:user["url"].index(user["domain"])]+user["domain"]
     auser["net_type"] = user["net_type"]
@@ -216,15 +221,18 @@ def post2(topic):
     post["post_id"] = topic["uuid"]
     post["user_id"] = topic["user_id"]
     post["user_name"] = topic["user_name"]
-    post["publish_time"] = str(topic["push_time"])
+    post["publish_time"] = topic["publish_time"]
     post["content"] = topic["content"]
     post["topic_id"] = topic["topic_id"]
+    post["topic_type"] = topic["topic_type"]
     post["url"] = topic["url"]
     post["title"] = topic["title"]
     post["crawl_time"] = topic["crawl_time"]
     post["net_type"] = topic["net_type"]
-    post["domain"] = topic["domain"]
     post["domain"] = topic["url"][:topic["url"].index(topic["domain"])]+topic["domain"]
+    post["emails"] = str(topic["emails"])
+
+
     try:
         post["comment_id"] = topic["comment_id"]
     except:
@@ -237,7 +245,10 @@ def post2(topic):
         post["bitcoin_addresses"] = str(topic["bitcoin_addresses"])
     except:
         post["bitcoin_addresses"] = ""
-    post["eth_addresses"] = str(topic["eth_addresses"])
+    try:
+        post["eth_addresses"] = str(topic["eth_addresses"])
+    except:
+        post["eth_addresses"] = ""
 
     return post
 
@@ -303,7 +314,7 @@ def good2(goods):
     except:
         good["goods_tag"] = ""
     good["net_type"] = goods["net_type"]
-    good["price"] = goods["price"]
+    good["price"] = goods["price"][0]
     good["publish_time"] = goods["publish_time"]
     try:
         good["sku_quantify"] = goods["sku"]
