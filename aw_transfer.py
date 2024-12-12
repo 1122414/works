@@ -54,18 +54,25 @@ def site2(page):
     site["domain"] = page["url"][:page["url"].index(page["domain"])]+page["domain"]
     site["net_type"] = page["net_type"]
     site["url"] = page["url"]
-    site["title"] = page["title"]
     site["lang"] = "en_us" if page["language"] == "en" else page["language"]
     site["first_publish_time"] = page["crawl_time"]
     site["last_publish_time"] = page["crawl_time"]
     # site["last_publish_time"] = page["crawl_time"]
     site["is_recent_online"] = "true"
-    site["platform"] = page["title"]
+
+    try:
+        site["title"] = page["title"]
+        site["platform"] = page["title"]
+        site["site_name"] = page["title"]
+    except:
+        site["title"] = ""
+        site["platform"] = ""
+        site["site_name"] = ""
+
     try:
         site["content_encode"] = page["meta"]["charset"]
     except:
         site["content_encode"] = ""
-    site["site_name"] = page["title"]
     site["index_url"] = page["url"]
 
     print(site)
@@ -238,7 +245,6 @@ def post2(topic):
     post["topic_id"] = topic["topic_id"]
     post["topic_type"] = topic["topic_type"]
     post["url"] = topic["url"]
-    post["title"] = topic["title"]
     post["crawl_time"] = topic["crawl_time"]
     post["net_type"] = topic["net_type"]
     post["domain"] = topic["url"][:topic["url"].index(topic["domain"])]+topic["domain"]
@@ -247,6 +253,10 @@ def post2(topic):
     except:
         pass
 
+    try:
+        post["title"] = topic["title"]
+    except:
+        pass
 
     try:
         post["comment_id"] = topic["comment_id"]
