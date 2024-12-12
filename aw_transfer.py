@@ -242,7 +242,10 @@ def post2(topic):
     post["crawl_time"] = topic["crawl_time"]
     post["net_type"] = topic["net_type"]
     post["domain"] = topic["url"][:topic["url"].index(topic["domain"])]+topic["domain"]
-    post["emails"] = str(topic["emails"])
+    try:
+        post["emails"] = str(topic["emails"])
+    except:
+        pass
 
 
     try:
