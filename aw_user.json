@@ -5,17 +5,16 @@
         "push_time": 1715243392,
         "uuid": "943efceb30f246c5b3d71ec76cb6dd36",
         "table_type": "user",
-        "data": {
-            "crawl_time": "2024-05-09T08:29:52",
-            "domain": "skingykcpkkenvhhlg5vdsitvdoefkbo7frfiv3gscue66ynvuqq7bid.onion",
-            "net_type": "tor",
-            "spider_name": "onion_steriodking_market_spider",
-            "gmt_create": "2024-05-09T08:29:52",
-            "url": "http://skingykcpkkenvhhlg5vdsitvdoefkbo7frfiv3gscue66ynvuqq7bid.onion/",
-            "user_name": "Steriod King",
-            "user_id": "Steriod King",
-            "pages_uuid": "cb20c0442c35161b01148dea7238fa37",
-            "site_uuid": "a80479e623e659e9e508250067e82eb1"
-        }
+        "crawl_time": "2024-05-09T08:29:52",
+        "domain": "skingykcpkkenvhhlg5vdsitvdoefkbo7frfiv3gscue66ynvuqq7bid.onion",
+        "net_type": "tor",
+        "spider_name": "onion_steriodking_market_spider",
+        "gmt_create": "2024-05-09T08:29:52",
+        "url": "http://skingykcpkkenvhhlg5vdsitvdoefkbo7frfiv3gscue66ynvuqq7bid.onion/",
+        "user_name": "Steriod King",
+        "user_id": "Steriod King",
+        "pages_uuid": "cb20c0442c35161b01148dea7238fa37",
+        "site_uuid": "a80479e623e659e9e508250067e82eb1",
+        "topic": "aw_user"
     }
 ]

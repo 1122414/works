@@ -1,62 +1,23 @@
 [
     {
-        "push_time": 1715158087,
-        "vendor": "pt",
-        "platform": "tor",
-        "uuid": "c45f526907097b3707c5bcc67c8f2560",
-        "table_type": "page",
-        "data": {
-            "title": "The Hidden Wiki",
-            "spider_name": "onion_crawler",
-            "content_type": "text/html",
-            "url": "http://wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion",
-            "domain": "wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion",
-            "site_uuid": "7680d621f7f0d27ae094e9cb5963bd81",
-            "net_type": "tor",
-            "h1": "Main Page",
-            "meta": [
-                {"charset": "UTF-8"},
-                {"name": "generator", "content": "MediaWiki 1.32.0"},
-                {"name": "viewport", "content": ""}
-            ],
-            "links": [
-                {
-                    "link": "http://uj3wazyk5u4hnvtk.onion/",
-                    "name": "The Pirate Bay",
-                    "tag_name": "a",
-                    "text": "The Pirate Bay"
-                },
-                {
-                    "link": "Contact_Directory.html",
-                    "name": "Contact Directory",
-                    "tag_name": "a",
-                    "text": "Contact Directory"
-                }
-            ],
-            "images": [
-                {
-                    "url": "http://wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion/torwiki.gif",
-                "name": "Tor Wiki"
-                },
-                {
-                    "url": "http://wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion/kra.gif",
-                    "name": "Kraken search engine"
-                },
-
-                {
-                    "url": "http://wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion/vcs.gif",
-                    "name": "VCS Links"
-                },
-                {
-                    "url": "http://wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion/resources/assets/poweredby_mediawiki_88x31.png",
-                    "name": "Powered by MediaWiki"
-                }
-            ],
-            "language": "en",
-            "crawl_time": "2024-05-08T08:48:07",
-            "code": 200,
-            "page_source": "<!DOCTYPE html>",
-            "gmt_create": "2024-05-08T08:48:07"
-        }
-    }
+    "push_time": 1715158087,
+    "vendor": "pt",
+    "platform": "tor",
+    "uuid": "c45f526907097b3707c5bcc67c8f2560",
+    "table_type": "page",
+    "title": "The Hidden Wiki",
+    "spider_name": "onion_crawler",
+    "content_type": "text/html",
+    "url": "http://wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion",
+    "domain": "wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion",
+    "site_uuid": "7680d621f7f0d27ae094e9cb5963bd81",
+    "net_type": "tor",
+    "h1": "Main Page",
+    "meta": [{"charset": "UTF-8"}, {"name": "generator", "content": "MediaWiki 1.32.0"}, {"name": "viewport", "content": "width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=0.25, maximum-scale=5.0"}],
+    "links": [{"link": "#column-one", "name": "Jump to navigation", "tag_name": "a", "text": "Jump to navigation"} ],
+    "images": [{"url": "http://wiki2zkamfya6mnyvk4aom4yjyi2kwsz7et3e4wnikcrypqv63rsskid.onion/buyreal.gif", "name": "Buy real money"} ],
+    "language": "en",
+    "crawl_time": "2024-05-08T08:48:07",
+    "code": 200,
+    "page_source": ""
 ]
