@@ -58,8 +58,8 @@ def site2(page):
     site["lang"] = "en_us" if page["language"] == "en" else page["language"]
     site["first_publish_time"] = page["crawl_time"]
     site["last_publish_time"] = page["crawl_time"]
-    # site["last_publish_time"] = page["crawl_time"]
     site["is_recent_online"] = "true"
+    site["index_url"] = page["url"]
 
     try:
         site["title"] = page["title"]
@@ -74,9 +74,7 @@ def site2(page):
         site["content_encode"] = page["meta"]["charset"]
     except:
         site["content_encode"] = ""
-    site["index_url"] = page["url"]
 
-    print(site)
     return site
 
 def page2(page):
@@ -110,35 +108,40 @@ def page2(page):
 
     apage["crawl_time"] = page["crawl_time"]
     apage["domain"] = page["url"][:page["url"].index("//")+2]+page["domain"]
-    try:
-        apage["content_encode"] = page["meta"]["charset"]
-    except:
-        apage["content_encode"] = ""
     apage["lang"] = "en_us" if page["language"] == "en" else page["language"]
-    try:
-        apage["meta"] = page["meta"]
-    except:
-        apage["meta"] = ""
     apage["net_type"] = page["net_type"]
     apage["page_source"] = page["page_source"]
-    try:
-        apage["title"] = page["title"]
-    except:
-        apage["title"] = ""
     apage["url"] = page["url"]
     apage["publish_time"] = page["crawl_time"]
+
+    try:
+        soup = BeautifulSoup(page["page_source"], 'html.parser')
+        text = soup.get_text()
+        text = re.sub(r'\n+', '\n', text)
+        apage["content"] = text
+    except:
+        apage["content"] = ""
+
     try:
         apage["subject"] = page["h1"]
     except:
         apage["subject"] = ""
-    soup = BeautifulSoup(page["page_source"], 'html.parser')
-    text = soup.get_text()
-    text = re.sub(r'\n+', '\n', text)
-    apage["content"] = text
+    try:
+        apage["title"] = page["title"]
+    except:
+        apage["title"] = ""
+    try:
+        apage["meta"] = str(page["meta"])
+    except:
+        apage["meta"] = ""
+    try:
+        apage["content_encode"] = page["meta"]["charset"]
+    except:
+        apage["content_encode"] = ""
 
     site = {}
 
-    if page["domain"] == page["url"] or page["domain"] == page["url"][:-1]:
+    if apage["domain"] == apage["url"] or apage["domain"] == apage["url"][:-1]:
         site = site2(page)
 
     return apage, site
@@ -160,7 +163,7 @@ def user2(user):
             "identity_tags" : "[]",
             "register_time" : "",
             "last_active_time" : "",
-            "goods_orders" : "",
+            "goods_orders" : -1,
             "level" : "",
             "member_degree" : "",
             "ratings" : "[]",
@@ -181,7 +184,7 @@ def user2(user):
             "user_related_url_and_address" : "",
             "user_related_images" : "",
             "user_related_files" : "",
-            "user_recent_day" : "",
+            "user_recent_day" : -1,
             "user_related_crawl_tags" : "",
             "lang" : "",
     }
@@ -252,6 +255,7 @@ def post2(topic):
     post["crawl_time"] = topic["crawl_time"]
     post["net_type"] = topic["net_type"]
     post["domain"] = topic["url"][:topic["url"].index("//")+2]+topic["domain"]
+
     try:
         post["emails"] = str(topic["emails"])
     except:
@@ -264,6 +268,8 @@ def post2(topic):
 
     try:
         post["comment_id"] = topic["comment_id"]
+        if topic["topic_type"] == "post":
+            post["comment_id"] = ""
     except:
         post["comment_id"] = ""
     try:
@@ -285,7 +291,6 @@ def post2(topic):
 def good2(goods):
     if goods["table_type"] != "goods":
         return None
-
     good = {
                 "platform" : "",
                 "uuid" : "",
@@ -301,9 +306,9 @@ def good2(goods):
                 "crawl_category_1" : "",
                 "crawl_time" : "",
                 "goods_area" : "",
-                "goods_browse_count" : "",
+                "goods_browse_count" : -1,
                 "goods_buyer" : "",
-                "goods_feedback_count" : "",
+                "goods_feedback_count" : -1,
                 "comment_user_id" : "",
                 "comment_id" : "",
                 "comment_time" : "",
@@ -315,7 +320,7 @@ def good2(goods):
                 "price" : "",
                 "publish_time" : "",
                 "sku_quantify" : "",
-                "sold_count" : "",
+                "sold_count" : -1,
                 "url" : "",
                 "user_id" : "",
                 "user_name" : "",
@@ -332,28 +337,32 @@ def good2(goods):
     good["goods_id"] = goods["goods_id"]
     good["goods_name"] = goods["goods_name"]
     good["goods_info"] = goods["goods_info"]
-    good["images"] = goods["goods_img_url"]
-    try:
-        good["bitcoin_addresses"] = goods["bitcoin_addresses"]
-    except:
-        good["bitcoin_addresses"] = ""
+    good["images"] = str(goods["goods_img_url"])
     good["crawl_category"] = goods["crawl_category"]
     good["crawl_time"] = goods["crawl_time"]
-    try:
-        good["goods_tag"] = goods["goods_tag"]
-    except:
-        good["goods_tag"] = ""
     good["net_type"] = goods["net_type"]
-    good["price"] = goods["price"][0]
     good["publish_time"] = goods["publish_time"]
-    try:
-        good["sku_quantify"] = goods["sku"]
-    except:
-        good["sku_quantify"] = ""
     good["url"] = goods["url"]
     # good["user_id"] = goods["user_id"]
     good["user_id"] = calculate_sha1(goods["domain"]+goods["user_id"])
     good["user_name"] = goods["user_name"]
+
+    try:
+        good["price"] = str(goods["price"][0])
+    except:
+        good["price"] = str(goods["price"])
+    try:
+        good["bitcoin_addresses"] = str(goods["bitcoin_addresses"])
+    except:
+        good["bitcoin_addresses"] = ""
+    try:
+        good["goods_tag"] = str(goods["goods_tag"])
+    except:
+        good["goods_tag"] = ""
+    try:
+        good["sku_quantify"] = goods["sku"]
+    except:
+        good["sku_quantify"] = ""
 
     return good
 
