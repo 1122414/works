@@ -2,6 +2,7 @@ import json
 from bs4 import BeautifulSoup
 import re
 import hashlib
+from datetime import datetime, timedelta
 
 
 def calculate_sha1(data):
@@ -17,6 +18,77 @@ def openjson(file):
     with open(file, encoding='utf-8') as jsonfile:
         data = json.load(jsonfile)
     return data
+
+
+def site3(service):
+    site = {
+            "domain": "",
+            "net_type": "",
+            "url": "",
+            "title": "",
+            "description": "[]",
+            "lang": "",
+            "snapshot": "{}",
+            "name": "",
+            "path": "",
+            "image_hash": "",
+            "last_status": "",
+            "first_publish_time": "",
+            "last_publish_time": "",
+            "service_type": "",
+            "is_recent_online": "",
+            "scale": "{}",
+            "active_level": "[]",
+            "label": "[]",
+            "site_hazard": "[]",
+            "goods_label": "[]",
+            "goods_count": -1,
+            "pay_methods": "[]",
+            "goods_user_count": -1,
+            "platform": "[]",
+            "content_encode": "",
+            "site_name": "",
+            "index_url": "",
+            "user_info": "{}",
+    }
+
+    site["domain"] = service["url"][:service["url"].index("//")+2]+service["domain"]
+    site["lang"] = "en_us" if service["language"] == "en" else service["language"]
+    site["net_type"] = service["net_type"]
+    site["url"] = service["url"]
+    site["first_publish_time"] = service["request_time"]
+    site["last_publish_time"] = service["time"]
+
+    given_time = datetime.strptime(service["time"], "%Y-%m-%d %H:%M:%S")
+
+    # 获取当前时间
+    current_time = datetime.now()
+
+    # 计算一周的时间差
+    one_week = timedelta(days=7)
+
+    # 判断给定时间是否在一周以内
+    if current_time - given_time < one_week:
+        site["is_recent_online"] = "online"
+    else:
+        site["is_recent_online"] = "offline"
+
+    site["index_url"] = service["url"]
+    site["description"] = service["response_keywords"]
+    site["label"] = str([service["category"]])
+
+    try:
+        site["title"] = service["title"]
+        site["platform"] = service["name"] if service["name"] else service["title"]
+        site["site_name"] = service["name"] if service["name"] else service["title"]
+    except Exception as e:
+        print(e)
+        site["title"] = ""
+        site["platform"] = ""
+        site["site_name"] = ""
+
+    return site
+
 
 
 def site2(page):

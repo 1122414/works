@@ -1,6 +1,6 @@
 import pika
 import json
-from aw_transfer import openjson, page2, user2, post2, good2, site2
+from aw_transfer import openjson, page2, site3, user2, post2, good2, site2
 
 # ip = "172.16.19.108"
 ip = "43.154.182.55"
@@ -26,6 +26,10 @@ print(f"post:\n{post}")
 goods = openjson("aw_goods.json")
 good = good2(goods[0])
 print(f"good:\n{good}")
+
+sites = openjson("dark_service.json")
+site1 = site3(sites[0])
+print(f"site3:\n{site1}")
 
 jpost = json.dumps(post)
 jgood = json.dumps(good)
@@ -75,9 +79,14 @@ for key in eusers[0]:
         print(f"user: {key} : {type(eusers[0][key])}")
 print("user finish")
 
+for key in esites[0]:
+    if type(esites[0][key]) != type(site1[key]):
+        print(f"site: {key} : {type(esites[0][key])}")
+print("site1 finish")
+
 # 发布消息到队列
-channel.basic_publish(exchange='', routing_key="post", body=jpost)
-channel.basic_publish(exchange='', routing_key="goods", body=jgood)
-channel.basic_publish(exchange='', routing_key="page", body=jpage)
-channel.basic_publish(exchange='', routing_key="site", body=jsite)
-channel.basic_publish(exchange='', routing_key="user", body=juser)
+# channel.basic_publish(exchange='', routing_key="post", body=jpost)
+# channel.basic_publish(exchange='', routing_key="goods", body=jgood)
+# channel.basic_publish(exchange='', routing_key="page", body=jpage)
+# channel.basic_publish(exchange='', routing_key="site", body=jsite)
+# channel.basic_publish(exchange='', routing_key="user", body=juser)
