@@ -52,7 +52,7 @@ class MQ:
         while True:
             try:
                 self.recvMQ.queue_declare(queue="dark_service", durable=True)
-                self.recvMQ.basic_consume(queue=recv_key, on_message_callback=self.recv, auto_ack=False)
+                self.recvMQ.basic_consume(queue="dark_service", on_message_callback=self.recvsite, auto_ack=False)
                 for recv_key in self.recv_keys:
                     self.recvMQ.queue_declare(queue=recv_key, durable=True)
                     self.recvMQ.basic_consume(queue=recv_key, on_message_callback=self.recv, auto_ack=False)
@@ -69,6 +69,8 @@ class MQ:
             site = aw_transfer.site3(data)
             if site:
                 self.send_data.append({"queue": "site", "data": site})
+
+            self.push("aw_site", body)
 
             logging.info(f"******接收数据{data['table_type']}，累计接收次数: {self.recv_count}******")
             # ch.basic_ack(delivery_tag=method.delivery_tag) #TODO 手动确认
