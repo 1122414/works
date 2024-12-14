@@ -27,6 +27,12 @@ goods = openjson("aw_goods.json")
 good = good2(goods[0])
 print(f"good:\n{good}")
 
+topic[0]["domain"] = users[0]["domain"]
+topic[0]["user_id"] = users[0]["user_id"]
+post1 = post2(topic[0])
+print(f"post:\n{post1}")
+print(post1["user_id"] == user["uuid"])
+
 sites = openjson("dark_service.json")
 site1 = site3(sites[0])
 print(f"site3:\n{site1}")
@@ -34,7 +40,7 @@ print(f"site3:\n{site1}")
 jpost = json.dumps(post)
 jgood = json.dumps(good)
 jpage = json.dumps(page)
-jsite = json.dumps(site)
+jsite = json.dumps(site1)
 juser = json.dumps(user)
 
 with open("test_post.json", 'w', encoding='utf-8') as f:

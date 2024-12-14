@@ -110,6 +110,10 @@ class MQ:
                 # if good:
                 #     self.send_data.append({"queue":"goods", "data":good})
 
+            self.push("aw_"+data["table_type"], body)
+            if "user_uuid" in data:
+                logging.info(f"!!! {data['table_type']} 有 user_uuid")
+
             self.recv_count += 1  # 增加计数
             logging.info(f"******接收数据{data['table_type']}，累计接收次数: {self.recv_count}******")
             # ch.basic_ack(delivery_tag=method.delivery_tag) #TODO 手动确认
@@ -128,6 +132,14 @@ class MQ:
             # routing_key = element["queue"]
             routing_key = element["queue"]
 
+            if self.push(routing_key, message):
+                # self.send_count += 1  # 初始化计数器
+                self.send_count[routing_key+'_num'] += 1  # 增加计数
+                logging.info(f"------发送数据{routing_key}，累计发送{routing_key}次数: {self.send_count[routing_key+'_num']}------\n")
+            else:
+                self.send_data.append(element)
+
+                """
             try:
                 # 检查队列是否存在
                 if not self.sendMQ.queue_declare(queue=routing_key, durable=True).method.queue:
@@ -150,6 +162,28 @@ class MQ:
                 self.send_data.append(element)
                 break
                 # self.sendMQ.basic_publish(exchange='', routing_key=routing_key, body=message)
+                """
+
+    def push(self, routing_key, message):
+        try:
+            # 检查队列是否存在
+            if not self.sendMQ.queue_declare(queue=routing_key, durable=True).method.queue:
+                logging.info(f"Queue '{routing_key}' does not exist. Creating it.")
+                # 创建队列，durable=True 表示队列将在 broker 重启后依然存在
+                self.sendMQ.exchange_declare(exchange="scrapy", exchange_type="direct", durable=True)
+                self.sendMQ.queue_declare(queue=routing_key, durable=True)
+                self.sendMQ.queue_bind(exchange="scrapy", queue=routing_key, routing_key=routing_key)
+
+            # 发布消息到队列
+            self.sendMQ.basic_publish(exchange='', routing_key=routing_key, body=message)
+
+            return True
+
+        except Exception as e:
+            logging.error("mq通道关闭" + str(e))
+            self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password, "/")
+
+            return False
 
     def close(self):
         try:
