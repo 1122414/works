@@ -77,7 +77,7 @@ class MQ:
             mq.mqSend()
 
         except Exception as e:
-            logging.error(f"ERROR: recv data site: {e} ")
+            logging.error(f"ERROR: 接收数据报错，报错的表是： site 错误原因是: {e} ")
 
     def recv(self, ch, method, properties, body):
         data = json.loads(body.decode('utf-8'))
@@ -128,7 +128,7 @@ class MQ:
             mq.mqSend()
 
         except Exception as e:
-            logging.error(f"ERROR: recv data {data["table_type"]}: {e} ")
+            logging.error(f"ERROR: 接收数据报错，报错的表是：{data["table_type"]} 错误原因是: {e} ")
 
     def mqSend(self):
         send_len = len(self.send_data)
