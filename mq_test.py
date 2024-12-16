@@ -72,7 +72,8 @@ class MQ:
 
             self.push("aw_site", body)
 
-            logging.info(f"******接收数据{data['table_type']}，累计接收次数: {self.recv_count}******")
+            self.recv_count += 1  # 增加计数
+            logging.info(f"******接收数据 site ，累计接收次数: {self.recv_count}******")
             # ch.basic_ack(delivery_tag=method.delivery_tag) #TODO 手动确认
             mq.mqSend()
 
@@ -123,7 +124,7 @@ class MQ:
             self.push("aw_"+data["table_type"], body)
 
             self.recv_count += 1  # 增加计数
-            logging.info(f"******接收数据{data['table_type']}，累计接收次数: {self.recv_count}******")
+            logging.info(f"******接收数据 {data['table_type']} ，累计接收次数: {self.recv_count}******")
             # ch.basic_ack(delivery_tag=method.delivery_tag) #TODO 手动确认
             mq.mqSend()
 

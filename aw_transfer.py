@@ -82,7 +82,7 @@ def site3(service):
         site["platform"] = service["name"] if service["name"] else service["title"]
         site["site_name"] = service["name"] if service["name"] else service["title"]
     except Exception as e:
-        print(e)
+        # print(e)
         site["title"] = ""
         site["platform"] = ""
         site["site_name"] = ""
@@ -140,7 +140,7 @@ def site2(page):
         site["platform"] = page["title"]
         site["site_name"] = page["title"]
     except Exception as e:
-        print(e)
+        # print(e)
         site["title"] = ""
         site["platform"] = ""
         site["site_name"] = ""
@@ -148,7 +148,7 @@ def site2(page):
     try:
         site["content_encode"] = page["meta"]["charset"]
     except Exception as e:
-        print(e)
+        # print(e)
         site["content_encode"] = ""
 
     return site
@@ -197,28 +197,28 @@ def page2(page):
         text = re.sub(r'\n+', '\n', text)
         apage["content"] = text
     except Exception as e:
-        print(e)
+        # print(e)
         apage["content"] = ""
 
     try:
         apage["subject"] = page["h1"]
     except Exception as e:
-        print(e)
+        # print(e)
         apage["subject"] = ""
     try:
         apage["title"] = page["title"]
     except Exception as e:
-        print(e)
+        # print(e)
         apage["title"] = ""
     try:
         apage["meta"] = str(page["meta"])
     except Exception as e:
-        print(e)
+        # print(e)
         apage["meta"] = ""
     try:
         apage["content_encode"] = page["meta"]["charset"]
     except Exception as e:
-        print(e)
+        # print(e)
         apage["content_encode"] = ""
 
     site = {}
@@ -339,13 +339,13 @@ def post2(topic):
     try:
         post["emails"] = str(topic["emails"])
     except Exception as e:
-        print(e)
+        # print(e)
         post["emails"] = ""
 
     try:
         post["title"] = topic["title"]
     except Exception as e:
-        print(e)
+        # print(e)
         post["title"] = ""
 
     try:
@@ -353,7 +353,7 @@ def post2(topic):
         if topic["topic_type"] == "post":
             post["comment_id"] = ""
     except Exception as e:
-        print(e)
+        # print(e)
         post["comment_id"] = ""
     try:
         # post["comment_user_id"] = topic["commented_user_id"]
@@ -364,17 +364,17 @@ def post2(topic):
         else:
             post["commented_user_id"] = hashlib.md5((topic['domain'] + topic['commented_user_id']).encode('utf-8')).hexdigest()
     except Exception as e:
-        print(e)
+        # print(e)
         post["comment_user_id"] = ""
     try:
         post["bitcoin_addresses"] = str(topic["bitcoin_addresses"])
     except Exception as e:
-        print(e)
+        # print(e)
         post["bitcoin_addresses"] = ""
     try:
         post["eth_addresses"] = str(topic["eth_addresses"])
     except Exception as e:
-        print(e)
+        # print(e)
         post["eth_addresses"] = ""
 
     return post
@@ -440,22 +440,22 @@ def good2(goods):
     try:
         good["price"] = str(goods["price"][0])
     except Exception as e:
-        print(e)
+        # print(e)
         good["price"] = str(goods["price"])
     try:
         good["bitcoin_addresses"] = str(goods["bitcoin_addresses"])
     except Exception as e:
-        print(e)
+        # print(e)
         good["bitcoin_addresses"] = ""
     try:
         good["goods_tag"] = str(goods["goods_tag"])
     except Exception as e:
-        print(e)
+        # print(e)
         good["goods_tag"] = ""
     try:
         good["sku_quantify"] = goods["sku"]
     except Exception as e:
-        print(e)
+        # print(e)
         good["sku_quantify"] = ""
 
     return good
@@ -476,13 +476,13 @@ def goodComment2(good,comment):
 if __name__ == "__main__":
     page = openjson("aw_page.json")
     apage, site = page2(page[0])
-    # print(apage)
+    # # print(apage)
     user = openjson("aw_user.json")
     auser = user2(user[0])
-    print(auser)
+    # print(auser)
     topic = openjson("aw_topic.json")
     post = post2(topic[0])
-    print(post)
+    # print(post)
     goods = openjson("aw_goods.json")
     good = good2(goods[0])
-    print(good)
+    # print(good)
