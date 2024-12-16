@@ -272,8 +272,7 @@ def user2(user):
     }
 
     auser["domain"] = user["url"][:user["url"].index("//")+2]+user["domain"]
-    auser["uuid"] = calculate_sha1(user["domain"]+user["user_id"])
-    # auser["uuid"] = user["uuid"]
+    auser["uuid"] = user["uuid"]
     auser["net_type"] = user["net_type"]
     auser["user_name"] = user["user_name"]
     auser["user_id"] = user["user_id"]
@@ -327,8 +326,7 @@ def post2(topic):
     post["domain"] = topic["url"][:topic["url"].index("//")+2]+topic["domain"]
     post["uuid"] = topic["uuid"]
     post["post_id"] = topic["uuid"]
-    # post["user_id"] = topic["user_id"]
-    post["user_id"] = calculate_sha1(topic["domain"]+topic["user_id"])
+    post["user_id"] = topic["user_uuid"]
     post["user_name"] = topic["user_name"]
     post["publish_time"] = topic["publish_time"]
     post["content"] = topic["content"]
@@ -359,7 +357,12 @@ def post2(topic):
         post["comment_id"] = ""
     try:
         # post["comment_user_id"] = topic["commented_user_id"]
-        post["commented_user_id"] = calculate_sha1(topic["domain"]+topic["commented_user_id"])
+        # post["commented_user_id"] = calculate_sha1(topic["domain"]+topic["commented_user_id"])
+        if "commented_user_uuid" in topic:
+            post["commented_user_id"] = topic["commented_user_uuid"]
+
+        else:
+            post["commented_user_id"] = hashlib.md5((topic['domain'] + topic['commented_user_id']).encode('utf-8')).hexdigest()
     except Exception as e:
         print(e)
         post["comment_user_id"] = ""
@@ -431,8 +434,7 @@ def good2(goods):
     good["net_type"] = goods["net_type"]
     good["publish_time"] = goods["publish_time"]
     good["url"] = goods["url"]
-    # good["user_id"] = goods["user_id"]
-    good["user_id"] = calculate_sha1(goods["domain"]+goods["user_id"])
+    good["user_id"] = goods["user_uuid"]
     good["user_name"] = goods["user_name"]
 
     try:
