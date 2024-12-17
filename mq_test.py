@@ -1,3 +1,4 @@
+import time
 import pika
 import json
 import aw_transfer
@@ -30,10 +31,13 @@ class MQ:
         self.recv_port = "5672"
         self.recv_username = "spider"
         self.recv_password = "spider"
+        self.recv_vhost = "/anwang4"
+
         self.send_ip = "172.16.19.108"
         self.send_port = "5672"
         self.send_username = "spider"
         self.send_password = "spider"
+        self.send_vhost = "/"
 
         # self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods" , "aw_goods_comment"]
         self.recv_keys = ["aw_topic", "aw_page", "aw_user", "aw_goods"]
@@ -42,52 +46,57 @@ class MQ:
 
     def mqinit(self, ip, port, username, password, vhost):
         credentials = pika.PlainCredentials(username, password)
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(ip, port, vhost, credentials)
-        )
+        connection = pika.BlockingConnection(pika.ConnectionParameters(ip, port, vhost, credentials))
         return connection.channel()
 
-    def connection(self):
-        self.recvMQ = self.mqinit(
-            self.recv_ip,
-            self.recv_port,
-            self.recv_username,
-            self.recv_password,
-            "/anwang4",
-        )
-        self.sendMQ = self.mqinit(
-            self.send_ip, self.send_port, self.send_username, self.send_password, "/"
-        )
+    def connection(self, retry_count=10, delay=5):
+        attempt = 0
+        while attempt < retry_count:
+            try:
+                self.recvMQ = self.mqinit(self.recv_ip, self.recv_port, self.recv_username, self.recv_password, self.recv_vhost)
+                self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password, self.send_vhost)
 
-    def mqRecv(self):
-        while True:
+                logging.info("mq连接成功")
+                break
+
+            except pika.exceptions.AMQPConnectionError as e:
+                logging.error(f"连接MQ失败，正在重试... ({attempt+1}/{retry_count})")
+                attempt += 1
+                time.sleep(delay)
+
+    def mqRecv(self, retry_count=10, delay=5):
+        attempt = 0
+        while attempt < retry_count:
             try:
                 self.recvMQ.queue_declare(queue="dark_service", durable=True)
-                self.recvMQ.basic_consume(
-                    queue="dark_service",
-                    on_message_callback=self.recvsite,
-                    auto_ack=False,
-                )
+                self.recvMQ.basic_consume(queue="dark_service", on_message_callback=self.recvsite, auto_ack=False)
                 for recv_key in self.recv_keys:
                     self.recvMQ.queue_declare(queue=recv_key, durable=True)
-                    self.recvMQ.basic_consume(
-                        queue=recv_key, on_message_callback=self.recv, auto_ack=False
-                    )
+                    self.recvMQ.basic_consume(queue=recv_key, on_message_callback=self.recv, auto_ack=False)
 
                 self.recvMQ.start_consuming()
-            except:
-                self.close()
-                self.connection()
+                logging.info("mq创建消费成功")
+
+                break  # 成功连接后退出循环
+            except pika.exceptions.AMQPConnectionError as e:
+                logging.error(f"连接MQ失败，正在重试... ({attempt+1}/{retry_count})")
+                attempt += 1
+                time.sleep(delay)
+            except Exception as e:
+                logging.error(f"创建消费队列 发生未知错误: {e}")
+                break
+        logging.error("达到最大重试次数，停止重试")
 
     def recvsite(self, ch, method, properties, body):
         try:
-            data = json.loads(body.decode("utf-8"))
+            json_str = body.decode('utf-8', errors='replace')
+            data = json.loads(json_str, strict=False)
 
             site = aw_transfer.site3(data)
             if site:
                 self.send_data.append({"queue": "site", "data": site})
 
-            self.push("aw_site", body)
+            self.push("dark_service", json.dumps(data))
 
             self.recv_count += 1  # 增加计数
             logging.info(f"******接收数据 site ，累计接收次数: {self.recv_count}******")
@@ -98,7 +107,8 @@ class MQ:
             logging.error(f"ERROR: 接收数据报错，报错的表是： site 错误原因是: {e} ")
 
     def recv(self, ch, method, properties, body):
-        data = json.loads(body.decode("utf-8"))
+        json_str = body.decode('utf-8', errors='replace')
+        data = json.loads(json_str, strict=False)
         try:
 
             if data["table_type"] == "page":
@@ -138,7 +148,7 @@ class MQ:
                 # if good:
                 #     self.send_data.append({"queue":"goods", "data":good})
 
-            self.push("aw_" + data["table_type"], body)
+            self.push("aw_" + data["table_type"], json.dumps(data))
 
             self.recv_count += 1  # 增加计数
             logging.info(
@@ -165,9 +175,7 @@ class MQ:
             if self.push(routing_key, message):
                 # self.send_count += 1  # 初始化计数器
                 self.send_count[routing_key + "_num"] += 1  # 增加计数
-                logging.info(
-                    f"------发送数据{routing_key}，累计发送{routing_key}次数: {self.send_count[routing_key+'_num']}------\n"
-                )
+                logging.info(f"------发送数据{routing_key}，累计发送{routing_key}次数: {self.send_count[routing_key+'_num']}------\n")
             else:
                 self.send_data.append(element)
 
@@ -196,14 +204,8 @@ class MQ:
 
         except Exception as e:
             logging.error("mq通道关闭" + str(e))
-            self.sendMQ = self.mqinit(
-                self.send_ip,
-                self.send_port,
-                self.send_username,
-                self.send_password,
-                "/",
-            )
-
+            self.close()
+            self.connection()
             return False
 
     def close(self):
@@ -216,10 +218,11 @@ class MQ:
 
 if __name__ == "__main__":
     mq = MQ()
-    try:
-        mq.mqRecv()
-    except Exception as e:
-        logging.error(f"ERROR: {e}")
-        mq.close()
-        mq.connection()
-        mq.mqRecv()
+    while True:
+        try:
+            mq.mqRecv()
+        except Exception as e:
+            logging.error(f"ERROR: {e}")
+            mq.close()
+            mq.connection()
+            mq.mqRecv()
