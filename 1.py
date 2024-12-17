@@ -9,7 +9,9 @@ username = "spider"
 password = "spider"
 
 credentials = pika.PlainCredentials(username, password)
-connection = pika.BlockingConnection(pika.ConnectionParameters(ip, port, '/', credentials))
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(ip, port, "/", credentials)
+)
 channel = connection.channel()
 
 pages = openjson("aw_page.json")
@@ -43,15 +45,15 @@ jpage = json.dumps(page)
 jsite = json.dumps(site1)
 juser = json.dumps(user)
 
-with open("test_post.json", 'w', encoding='utf-8') as f:
+with open("test_post.json", "w", encoding="utf-8") as f:
     f.write(jpost)
-with open("test_good.json", 'w', encoding='utf-8') as f:
+with open("test_good.json", "w", encoding="utf-8") as f:
     f.write(jgood)
-with open("test_page.json", 'w', encoding='utf-8') as f:
+with open("test_page.json", "w", encoding="utf-8") as f:
     f.write(jpage)
-with open("test_site.json", 'w', encoding='utf-8') as f:
+with open("test_site.json", "w", encoding="utf-8") as f:
     f.write(jsite)
-with open("test_user.json", 'w', encoding='utf-8') as f:
+with open("test_user.json", "w", encoding="utf-8") as f:
     f.write(juser)
 
 egoods = openjson("good.json")
