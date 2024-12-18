@@ -188,7 +188,7 @@ def page2(page):
     apage["domain"] = page["url"][: page["url"].index("//") + 2] + page["domain"]
     apage["lang"] = "en_us" if page["language"] == "en" else page["language"]
     apage["net_type"] = page["net_type"]
-    apage["page_source"] = page["page_source"]
+    # apage["page_source"] = page["page_source"]
     apage["url"] = page["url"]
     apage["publish_time"] = page["crawl_time"]
 
