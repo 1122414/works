@@ -11,7 +11,7 @@ logging.basicConfig(
     filename=log_filename,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    encoding="utf-8",  # 指定字符集为 UTF-8
+    # encoding="utf-8",  # 指定字符集为 UTF-8
 )
 
 
@@ -76,7 +76,8 @@ class MQ:
             logging.info("mq创建消费成功")
 
         except Exception as e:
-            logging.error(f"创建消费队列 发生未知错误: {e}")
+            logging.error("创建消费失败")
+            self.connection()
 
     def recvsite(self, ch, method, properties, body):
         try:
