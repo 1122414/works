@@ -88,7 +88,8 @@ class MQ:
             if site:
                 self.send_data.append({"queue": "site", "data": site})
 
-            self.push("dark_service", json.dumps(data))
+            # NOTE 数据备份
+            # self.push("dark_service", json.dumps(data))
 
             self.recv_count += 1  # 增加计数
             logging.info(f"******接收数据 site ，累计接收次数: {self.recv_count}******")
@@ -140,7 +141,8 @@ class MQ:
                 # if good:
                 #     self.send_data.append({"queue":"goods", "data":good})
 
-            self.push("aw_" + data["table_type"], json.dumps(data))
+            # NOTE 数据备份
+            # self.push("aw_" + data["table_type"], json.dumps(data))
 
             self.recv_count += 1  # 增加计数
             logging.info(
