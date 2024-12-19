@@ -64,28 +64,19 @@ class MQ:
                 attempt += 1
                 time.sleep(delay)
 
-    def mqRecv(self, retry_count=10, delay=5):
-        attempt = 0
-        while attempt < retry_count:
-            try:
-                self.recvMQ.queue_declare(queue="dark_service", durable=True)
-                self.recvMQ.basic_consume(queue="dark_service", on_message_callback=self.recvsite, auto_ack=False)
-                for recv_key in self.recv_keys:
-                    self.recvMQ.queue_declare(queue=recv_key, durable=True)
-                    self.recvMQ.basic_consume(queue=recv_key, on_message_callback=self.recv, auto_ack=False)
+    def mqRecv(self):
+        try:
+            self.recvMQ.queue_declare(queue="dark_service", durable=True)
+            self.recvMQ.basic_consume(queue="dark_service", on_message_callback=self.recvsite, auto_ack=False)
+            for recv_key in self.recv_keys:
+                self.recvMQ.queue_declare(queue=recv_key, durable=True)
+                self.recvMQ.basic_consume(queue=recv_key, on_message_callback=self.recv, auto_ack=False)
 
-                self.recvMQ.start_consuming()
-                logging.info("mq创建消费成功")
+            self.recvMQ.start_consuming()
+            logging.info("mq创建消费成功")
 
-                break  # 成功连接后退出循环
-            except pika.exceptions.AMQPConnectionError as e:
-                logging.error(f"连接MQ失败，正在重试... ({attempt+1}/{retry_count})")
-                attempt += 1
-                time.sleep(delay)
-            except Exception as e:
-                logging.error(f"创建消费队列 发生未知错误: {e}")
-                break
-        logging.error("达到最大重试次数，停止重试")
+        except Exception as e:
+            logging.error(f"创建消费队列 发生未知错误: {e}")
 
     def recvsite(self, ch, method, properties, body):
         try:
@@ -159,7 +150,7 @@ class MQ:
 
         except Exception as e:
             logging.error(
-                f"ERROR: 接收数据报错，报错的表是：{data["table_type"]} 错误原因是: {e} "
+                f'ERROR: 接收数据报错，报错的表是：{data["table_type"]} 错误原因是: {e} '
             )
 
     def mqSend(self):
