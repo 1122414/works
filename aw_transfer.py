@@ -386,8 +386,8 @@ def post2(topic):
 
 
 def good2(goods):
-    if goods["table_type"] != "goods":
-        return None
+    # if goods["comment_content"]!= "1111" and goods["table_type"] != "goods":
+    #     return None
     good = {
         "platform": "",
         "uuid": "",
@@ -431,16 +431,37 @@ def good2(goods):
 
     good["uuid"] = goods["uuid"]
     good["domain"] = goods["domain"]
-    good["goods_id"] = goods["goods_id"]
-    good["goods_name"] = goods["goods_name"]
-    good["goods_info"] = goods["goods_info"]
-    good["images"] = str(goods["goods_img_url"])
-    good["crawl_category"] = goods["crawl_category"]
-    good["crawl_time"] = goods["crawl_time"]
+    try:
+        good["goods_id"] = goods["goods_id"]
+    except:
+        good["goods_id"] = goods["id"]
+    try:
+        good["goods_name"] = goods["goods_name"]
+    except:
+        good["goods_name"] = goods["name"]
+    try:
+        good["goods_info"] = goods["goods_info"]
+    except:
+        good["goods_info"] = goods["description"]
+    try:
+        good["images"] = str(goods["goods_img_url"])
+    except:
+        good["images"] = str(goods["images"])
+    try:
+        good["crawl_category"] = goods["crawl_category"]
+    except:
+        good["crawl_category"] = goods["category_1"]
+    try:
+        good["crawl_time"] = goods["crawl_time"]
+    except:
+        good["crawl_time"] = goods["gather_time"]
     good["net_type"] = goods["net_type"]
     good["publish_time"] = goods["publish_time"]
     good["url"] = goods["url"]
-    good["user_id"] = goods["user_uuid"]
+    try:
+        good["user_id"] = goods["user_uuid"]
+    except:
+        good["user_id"] = goods["user_id"]
     good["user_name"] = goods["user_name"]
 
     try:
@@ -463,23 +484,51 @@ def good2(goods):
     except Exception as e:
         # print(e)
         good["sku_quantify"] = ""
+    try:
+        good["comment_content"] = str(goods["comment_content"])
+    except:
+        good["comment_content"] = ""
 
     return good
 
 
-def goodComment2(good, comment):
-    if comment["table_type"] != "goods_comment":
-        return None
+def goods_comment2(data):
+    # if good_comment["table_type"] != "goods_comment":
+    #     return None
+    data = data.replace('\n', '\\n')
+    try:
+        good_comments = json.loads(data)
+    except:
+        print("json格式解析错误！")
+        print(good_comments)
+    return good_comments
 
-    # good["comment_user_id"] = comment["user_id"]
-    good["comment_user_id"] = calculate_sha1(comment["domain"] + comment["user_id"])
-    good["comment_id"] = comment["comment_id"]
-    good["comment_time"] = comment["publish_time"]
-    good["comment_content"] = comment["content"]
+def good_cmb2(good,comment):
+    # 转换评论内容
+    # good['comment_content'] = '1111'
+    try:
+        # 塞入原本的comment
+        good['comment_content'] = json.loads(good['comment_content'])
+    except:
+        good['comment_content'] = []
+    good_comments = goods_comment2(comment)
+    for good_comment in good_comments:
+        comment = {}
+        comment['user_name'] = good_comment['user_name']
+        comment['type'] = "Reply" #TODO 要更改
+        comment['feedback'] = good_comment['feedback']
+        # 将字符串时间解析为 datetime 对象
+        good_comment['time'] = datetime.strptime(good_comment['time'], '%m/%d/%Y')
+        # 设置 comment['time'] 比 good_comment['time'] 晚一秒
+        comment['time'] = good_comment['time'] + timedelta(days=1)
+        # 如果需要将时间转换回原始字符串格式
+        comment['time'] = comment['time'].strftime('%m/%d/%Y')
+        good["comment_content"].append(comment)
 
-    return good
-
-
+    good_final = good2(good)
+    # print(good_final["comment_content"])
+    return good_final
+    
 if __name__ == "__main__":
     page = openjson("aw_page.json")
     apage, site = page2(page[0])
