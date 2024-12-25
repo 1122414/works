@@ -23,12 +23,21 @@ class ClickHouse:
         """
         初始化 ClickHouse 连接
         """
+        # 配置 ClickHouse 连接信息
+        host = '172.16.19.40'  # 替换为 ClickHouse 服务器地址
+        port = 9000                 # 默认端口是 9000
+        user = 'default'             # 默认用户
+        # password = 'inspur@123'                  # 默认没有密码，若有密码请填写
+        password = ''              # 默认没有密码，若有密码请填写
+        database = 'ty'  
+    
+    def connection(self):
         self.client = Client(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            database=database
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            database=self.database
         )
     
     def pre_query(self, id, url):
@@ -53,8 +62,10 @@ class ClickHouse:
             return [dict(zip(columns, row)) for row in rows]
 
         except Exception as e:
-            print(f"Error executing query: {e}")
-            return []
+            # print(f"Error executing query: {e}")
+            logging.error(f"ERROR: clickhouse 查询出错: {e} ")
+            self.connection()
+            return 0
 
 
 
@@ -172,6 +183,12 @@ class MQ:
                 elif data['comment_type']=='user':
                     aim_good_id = data["user_name"]  #此处因clickhoubse中user_id存的不对，所以拿user_name暂且当唯一
                 good = client.pre_query(aim_good_id,aim_good_url)
+
+                if not good:
+                    # 查询出错 或 没有查询到
+                    self.push("aw_"+data["table_type"], json.dumps(data))
+                    return None
+
                 # 错误处理
                 if(len(good)==0):
                     logging.error(f"ERROR: 未查询到商品数据")
@@ -193,6 +210,7 @@ class MQ:
 
         except Exception as e:
             logging.error(f"ERROR: recv data: {e} ")
+            self.push("aw_"+data["table_type"], json.dumps(data))
 
     def mqSend(self):
         send_len = len(self.send_data)
@@ -282,15 +300,7 @@ class MQ:
 
 if __name__ == "__main__":
     mq = MQ()
-    client = ClickHouse(
-        # 配置 ClickHouse 连接信息
-        host = '172.16.19.40',  # 替换为 ClickHouse 服务器地址
-        port = 9000,                 # 默认端口是 9000
-        user = 'default',             # 默认用户
-        # password = 'inspur@123'                  # 默认没有密码，若有密码请填写
-        password = '',              # 默认没有密码，若有密码请填写
-        database = 'ty'     # 替换为实际数据库名称
-    )
+    client = ClickHouse()
     try:
         mq.mqRecv()
     except Exception as e:

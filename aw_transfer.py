@@ -431,37 +431,16 @@ def good2(goods):
 
     good["uuid"] = goods["uuid"]
     good["domain"] = goods["domain"]
-    try:
-        good["goods_id"] = goods["goods_id"]
-    except:
-        good["goods_id"] = goods["id"]
-    try:
-        good["goods_name"] = goods["goods_name"]
-    except:
-        good["goods_name"] = goods["name"]
-    try:
-        good["goods_info"] = goods["goods_info"]
-    except:
-        good["goods_info"] = goods["description"]
-    try:
-        good["images"] = str(goods["goods_img_url"])
-    except:
-        good["images"] = str(goods["images"])
-    try:
-        good["crawl_category"] = goods["crawl_category"]
-    except:
-        good["crawl_category"] = goods["category_1"]
-    try:
-        good["crawl_time"] = goods["crawl_time"]
-    except:
-        good["crawl_time"] = goods["gather_time"]
+    good["goods_id"] = goods["goods_id"]
+    good["goods_name"] = goods["goods_name"]
+    good["goods_info"] = goods["goods_info"]
+    good["images"] = str(goods["goods_img_url"])
+    good["crawl_category"] = goods["crawl_category"]
+    good["crawl_time"] = goods["crawl_time"]
     good["net_type"] = goods["net_type"]
     good["publish_time"] = goods["publish_time"]
     good["url"] = goods["url"]
-    try:
-        good["user_id"] = goods["user_uuid"]
-    except:
-        good["user_id"] = goods["user_id"]
+    good["user_id"] = goods["user_uuid"]
     good["user_name"] = goods["user_name"]
 
     try:
@@ -484,13 +463,96 @@ def good2(goods):
     except Exception as e:
         # print(e)
         good["sku_quantify"] = ""
+
+    return good
+
+def clickHouse_good2(goods):
+    # if goods["comment_content"]!= "1111" and goods["table_type"] != "goods":
+    #     return None
+    good = {
+        "platform": "",
+        "uuid": "",
+        "domain": "",
+        "goods_id": "",
+        "goods_name": "",
+        "goods_info": "",
+        "images": "",
+        "attachments": "",
+        "bitcoin_addresses": "",
+        "contacts": "",
+        "crawl_category": "",
+        "crawl_category_1": "",
+        "crawl_time": "",
+        "goods_area": "",
+        "goods_browse_count": -1,
+        "goods_buyer": "",
+        "goods_feedback_count": -1,
+        "comment_user_id": "",
+        "comment_id": "",
+        "comment_time": "",
+        "comment_content": "",
+        "goods_ship_to": "",
+        "goods_tag": "",
+        "goods_update_time": "",
+        "net_type": "",
+        "price": "",
+        "publish_time": "",
+        "sku_quantify": "",
+        "sold_count": -1,
+        "url": "",
+        "user_id": "",
+        "user_name": "",
+        "lang": "",
+        "url_and_address": "",
+        "keywords_by_nlp": "",
+        "threaten_level": "",
+        "images_obs": "",
+        "attachments_obs": "",
+    }
+
+    good["uuid"] = goods["uuid"]
+    good["domain"] = goods["domain"]
+    good["goods_id"] = goods["id"]
+    good["goods_name"] = goods["name"]
+    good["goods_info"] = goods["description"]
+    good["images"] = str(goods["images"])
+    good["crawl_category"] = goods["category_1"]
+    # 设置 comment['time'] 比 good_comment['time'] 晚一秒
+    goods["gather_time"] += timedelta(seconds=1)
+    # 如果需要将时间转换回原始字符串格式
+    good["crawl_time"] = goods["gather_time"].strftime('%Y-%m-%d %H:%M:%S')
+    
+    good["net_type"] = goods["net_type"]
+    good["publish_time"] = goods["publish_time"]
+    good["url"] = goods["url"]
+    good["user_id"] = goods["user_id"]
+    good["user_name"] = goods["user_name"]
     try:
-        good["comment_content"] = str(goods["comment_content"])
+        good["price"] = str(goods["price"][0])
+    except Exception as e:
+        # print(e)
+        good["price"] = str(goods["price"])
+    try:
+        good["bitcoin_addresses"] = str(goods["bitcoin_addresses"])
+    except Exception as e:
+        # print(e)
+        good["bitcoin_addresses"] = ""
+    try:
+        good["goods_tag"] = str(goods["goods_tag"])
+    except Exception as e:
+        # print(e)
+        good["goods_tag"] = ""
+    try:
+        good["sku_quantify"] = goods["sku"]
+    except Exception as e:
+        # print(e)
+        good["sku_quantify"] = ""
+    try:
+        good["comment_content"] = json.dumps(goods["comment_content"])
     except:
         good["comment_content"] = ""
 
     return good
-
 
 def goods_comment2(data):
     # if good_comment["table_type"] != "goods_comment":
@@ -517,15 +579,10 @@ def good_cmb2(good,comment):
         comment['user_name'] = good_comment['user_name']
         comment['type'] = "Reply" #TODO 要更改
         comment['feedback'] = good_comment['feedback']
-        # 将字符串时间解析为 datetime 对象
-        good_comment['time'] = datetime.strptime(good_comment['time'], '%m/%d/%Y')
-        # 设置 comment['time'] 比 good_comment['time'] 晚一秒
-        comment['time'] = good_comment['time'] + timedelta(days=1)
-        # 如果需要将时间转换回原始字符串格式
-        comment['time'] = comment['time'].strftime('%m/%d/%Y')
+        comment['time'] = good_comment['time']
         good["comment_content"].append(comment)
 
-    good_final = good2(good)
+    good_final = clickHouse_good2(good)
     # print(good_final["comment_content"])
     return good_final
     
