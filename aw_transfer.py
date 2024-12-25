@@ -386,8 +386,8 @@ def post2(topic):
 
 
 def good2(goods):
-    if goods["table_type"] != "goods":
-        return None
+    # if goods["comment_content"]!= "1111" and goods["table_type"] != "goods":
+    #     return None
     good = {
         "platform": "",
         "uuid": "",
@@ -466,20 +466,126 @@ def good2(goods):
 
     return good
 
+def clickHouse_good2(goods):
+    # if goods["comment_content"]!= "1111" and goods["table_type"] != "goods":
+    #     return None
+    good = {
+        "platform": "",
+        "uuid": "",
+        "domain": "",
+        "goods_id": "",
+        "goods_name": "",
+        "goods_info": "",
+        "images": "",
+        "attachments": "",
+        "bitcoin_addresses": "",
+        "contacts": "",
+        "crawl_category": "",
+        "crawl_category_1": "",
+        "crawl_time": "",
+        "goods_area": "",
+        "goods_browse_count": -1,
+        "goods_buyer": "",
+        "goods_feedback_count": -1,
+        "comment_user_id": "",
+        "comment_id": "",
+        "comment_time": "",
+        "comment_content": "",
+        "goods_ship_to": "",
+        "goods_tag": "",
+        "goods_update_time": "",
+        "net_type": "",
+        "price": "",
+        "publish_time": "",
+        "sku_quantify": "",
+        "sold_count": -1,
+        "url": "",
+        "user_id": "",
+        "user_name": "",
+        "lang": "",
+        "url_and_address": "",
+        "keywords_by_nlp": "",
+        "threaten_level": "",
+        "images_obs": "",
+        "attachments_obs": "",
+    }
 
-def goodComment2(good, comment):
-    if comment["table_type"] != "goods_comment":
-        return None
-
-    # good["comment_user_id"] = comment["user_id"]
-    good["comment_user_id"] = calculate_sha1(comment["domain"] + comment["user_id"])
-    good["comment_id"] = comment["comment_id"]
-    good["comment_time"] = comment["publish_time"]
-    good["comment_content"] = comment["content"]
+    good["uuid"] = goods["uuid"]
+    good["domain"] = goods["domain"]
+    good["goods_id"] = goods["id"]
+    good["goods_name"] = goods["name"]
+    good["goods_info"] = goods["description"]
+    good["images"] = str(goods["images"])
+    good["crawl_category"] = goods["category_1"]
+    # 设置 comment['time'] 比 good_comment['time'] 晚一秒
+    goods["gather_time"] += timedelta(seconds=1)
+    # 如果需要将时间转换回原始字符串格式
+    good["crawl_time"] = goods["gather_time"].strftime('%Y-%m-%d %H:%M:%S')
+    
+    good["net_type"] = goods["net_type"]
+    good["publish_time"] = goods["publish_time"]
+    good["url"] = goods["url"]
+    good["user_id"] = goods["user_id"]
+    good["user_name"] = goods["user_name"]
+    try:
+        good["price"] = str(goods["price"][0])
+    except Exception as e:
+        # print(e)
+        good["price"] = str(goods["price"])
+    try:
+        good["bitcoin_addresses"] = str(goods["bitcoin_addresses"])
+    except Exception as e:
+        # print(e)
+        good["bitcoin_addresses"] = ""
+    try:
+        good["goods_tag"] = str(goods["goods_tag"])
+    except Exception as e:
+        # print(e)
+        good["goods_tag"] = ""
+    try:
+        good["sku_quantify"] = goods["sku"]
+    except Exception as e:
+        # print(e)
+        good["sku_quantify"] = ""
+    try:
+        good["comment_content"] = json.dumps(goods["comment_content"])
+    except:
+        good["comment_content"] = ""
 
     return good
 
+def goods_comment2(data):
+    # if good_comment["table_type"] != "goods_comment":
+    #     return None
+    data = data.replace('\n', '\\n')
+    try:
+        good_comments = json.loads(data)
+    except:
+        print("json格式解析错误！")
+        print(good_comments)
+    return good_comments
 
+def good_cmb2(good,comment):
+    # 转换评论内容
+    # good['comment_content'] = '1111'
+    try:
+        # 塞入原本的comment
+        good['comment_content'] = json.loads(good['comment_content'])
+    except:
+        good['comment_content'] = []
+    good_comments = goods_comment2(comment)
+    for good_comment in good_comments:
+        comment = {}
+        comment['user_name'] = good_comment['user_name']
+        comment['type'] = "Reply" #TODO 要更改
+        comment['feedback'] = good_comment['feedback']
+        comment['time'] = good_comment['time']
+        good["comment_content"].append(comment)
+
+    good_final = clickHouse_good2(good)
+    # print(good_final["comment_content"])
+    return good_final
+    
 if __name__ == "__main__":
     page = openjson("aw_page.json")
     apage, site = page2(page[0])

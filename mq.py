@@ -3,6 +3,11 @@ import json
 import aw_transfer
 import logging
 from datetime import datetime
+from clickhouse_driver import Client
+from typing import List, Dict, Any, Optional
+
+# 初始化 ClickHouse 客户端
+
 
 # 配置日志记录器
 log_filename = datetime.now().strftime("%Y%m%d") + ".log"
@@ -12,6 +17,57 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     encoding="utf-8",  # 指定字符集为 UTF-8
 )
+
+class ClickHouse:
+    def __init__(self, host: str, port: int = 9000, user: str = "default", password: str = "", database: str = "default"):
+        """
+        初始化 ClickHouse 连接
+        """
+        # 配置 ClickHouse 连接信息
+        host = '172.16.19.40'  # 替换为 ClickHouse 服务器地址
+        port = 9000                 # 默认端口是 9000
+        user = 'default'             # 默认用户
+        # password = 'inspur@123'                  # 默认没有密码，若有密码请填写
+        password = ''              # 默认没有密码，若有密码请填写
+        database = 'ty'  
+    
+    def connection(self):
+        self.client = Client(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+    
+    def pre_query(self, id, url):
+        query = f"select * from mid_deepweb_goods where id='{id}' and url='{url}'"
+        result = client.execute_query(query=query)
+        return result
+
+    def execute_query(self, query: str, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        """
+        执行查询并返回结果（以字典列表形式返回）
+        :param query: 查询语句
+        :param params: 可选的参数，用于查询中的占位符
+        :return: 查询结果，列表形式，每行数据为字典
+        """
+        try:
+            # 执行查询
+            rows = self.client.execute(query, params)
+            # 获取列名
+            columns = [desc[0] for desc in self.client.execute("DESCRIBE TABLE mid_deepweb_goods")]
+
+            # 将结果转为键值对的字典列表
+            return [dict(zip(columns, row)) for row in rows]
+
+        except Exception as e:
+            # print(f"Error executing query: {e}")
+            logging.error(f"ERROR: clickhouse 查询出错: {e} ")
+            self.connection()
+            return 0
+
+
 
 
 class MQ:
@@ -35,8 +91,8 @@ class MQ:
         self.send_username = "spider"
         self.send_password = "spider"
 
-        # self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods" , "aw_goods_comment"]
-        self.recv_keys = ["aw_topic", "aw_page", "aw_user", "aw_goods"]
+        self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods" , "aw_goods_comment"]
+        # self.recv_keys = ["aw_topic", "aw_page", "aw_user", "aw_goods"]
 
         self.connection()
 
@@ -121,11 +177,29 @@ class MQ:
                     self.send_data.append({"queue": "post", "data": post})
 
             if data["table_type"] == "goods_comment":
-                pass
-                # NOTE comment 数据有问题
-                # good = aw_transfer.goodComment2(good,data)
-                # if good:
-                #     self.send_data.append({"queue":"goods", "data":good})
+                aim_good_url = data["url"]
+                if data['comment_type']=='goods':
+                    aim_good_id = data["commented_id"]
+                elif data['comment_type']=='user':
+                    aim_good_id = data["user_name"]  #此处因clickhoubse中user_id存的不对，所以拿user_name暂且当唯一
+                good = client.pre_query(aim_good_id,aim_good_url)
+
+                if not good:
+                    # 查询出错 或 没有查询到
+                    self.push("aw_"+data["table_type"], json.dumps(data))
+                    return None
+
+                # 错误处理
+                if(len(good)==0):
+                    logging.error(f"ERROR: 未查询到商品数据")
+                    return
+                
+                if(len(good)>1):
+                    logging.error(f"ERROR: 查询到多个商品数据")
+                    return
+                # 合并后的数据加入上传mq的队列
+                good_cmb = aw_transfer.good_cmb2(good[0],data)
+                self.send_data.append({"queue": "goods", "data": good_cmb})
 
             self.recv_count += 1  # 增加计数
             logging.info(
@@ -136,6 +210,7 @@ class MQ:
 
         except Exception as e:
             logging.error(f"ERROR: recv data: {e} ")
+            self.push("aw_"+data["table_type"], json.dumps(data))
 
     def mqSend(self):
         send_len = len(self.send_data)
@@ -223,9 +298,9 @@ class MQ:
         except:
             logging.error("Channel is already closed.")
 
-
 if __name__ == "__main__":
     mq = MQ()
+    client = ClickHouse()
     try:
         mq.mqRecv()
     except Exception as e:
