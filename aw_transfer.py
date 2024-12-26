@@ -331,7 +331,6 @@ def post2(topic):
     post["post_id"] = topic["uuid"]
     post["user_id"] = topic["user_uuid"]
     post["user_name"] = topic["user_name"]
-    post["publish_time"] = topic["publish_time"]
     post["content"] = topic["content"]
     post["topic_id"] = topic["topic_id"]
     post["topic_type"] = topic["topic_type"]
@@ -344,6 +343,12 @@ def post2(topic):
     except Exception as e:
         # print(e)
         post["emails"] = ""
+
+    try:
+        post["publish_time"] = topic["publish_time"]
+    except Exception as e:
+        post["publish_time"] = topic["crawl_time"]
+
 
     try:
         post["title"] = topic["title"]
