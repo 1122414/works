@@ -1,3 +1,4 @@
+import traceback
 import pika
 import json
 import aw_transfer
