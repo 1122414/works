@@ -143,7 +143,7 @@ class MQ:
                 self.send_data.append({"queue": "site", "data": site})
 
             logging.info(
-                f"******接收数据{data['table_type']}，累计接收次数: {self.recv_count}******"
+                f"******接收数据 site，累计接收次数: {self.recv_count}******"
             )
             # ch.basic_ack(delivery_tag=method.delivery_tag) #TODO 手动确认
             mq.mqSend()
