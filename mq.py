@@ -15,22 +15,22 @@ logging.basicConfig(
     filename=log_filename,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    encoding="utf-8",  # 指定字符集为 UTF-8
+    # encoding="utf-8",  # 指定字符集为 UTF-8
 )
 
 class ClickHouse:
-    def __init__(self, host: str, port: int = 9000, user: str = "default", password: str = "", database: str = "default"):
+    def __init__(self, host: str = "172.16.19.40", port: int = 9000, user: str = "default", password: str = "", database: str = "ty"):
         """
         初始化 ClickHouse 连接
         """
         # 配置 ClickHouse 连接信息
-        host = '172.16.19.40'  # 替换为 ClickHouse 服务器地址
-        port = 9000                 # 默认端口是 9000
-        user = 'default'             # 默认用户
+        self.host = host # 替换为 ClickHouse 服务器地址
+        self.port = port # 默认端口是 9000
+        self.user = user # 默认用户
         # password = 'inspur@123'                  # 默认没有密码，若有密码请填写
-        password = ''              # 默认没有密码，若有密码请填写
-        database = 'ty'  
-    
+        self.password = password              # 默认没有密码，若有密码请填写
+        self.database = database
+
     def connection(self):
         self.client = Client(
             host=self.host,
@@ -40,8 +40,8 @@ class ClickHouse:
             database=self.database
         )
     
-    def pre_query(self, id, url):
-        query = f"select * from mid_deepweb_goods where id='{id}' and url='{url}'"
+    def pre_query(self, id, url, mode):
+        query = f"select * from mid_deepweb_goods where '{mode}'='{id}' and url='{url}'"
         result = client.execute_query(query=query)
         return result
 
@@ -91,8 +91,10 @@ class MQ:
         self.send_username = "spider"
         self.send_password = "spider"
 
-        self.recv_keys = ["aw_topic" ,"aw_page","aw_user" ,"aw_goods" , "aw_goods_comment"]
+        self.recv_keys = ["aw_topic", "aw_page", "aw_user", "aw_goods", "aw_goods_comment"]
         # self.recv_keys = ["aw_topic", "aw_page", "aw_user", "aw_goods"]
+
+        self.clickhouse = ClickHouse()
 
         self.connection()
 
@@ -105,22 +107,21 @@ class MQ:
 
     def connection(self):
         self.recvMQ = self.mqinit(
-            self.recv_ip,
-            self.recv_port,
-            self.recv_username,
-            self.recv_password,
+            self.recv_ip, self.recv_port, self.recv_username, self.recv_password,
             "/anwang4",
         )
         self.sendMQ = self.mqinit(
-            self.send_ip, self.send_port, self.send_username, self.send_password, "/"
+            self.send_ip, self.send_port, self.send_username,
+            self.send_password, "/"
         )
+        self.clickhouse.connection()
 
     def mqRecv(self):
         while True:
             try:
                 self.recvMQ.queue_declare(queue="dark_service", durable=True)
                 self.recvMQ.basic_consume(
-                    queue=recv_key, on_message_callback=self.recv, auto_ack=False
+                    queue="dark_service", on_message_callback=self.recv, auto_ack=False
                 )
                 for recv_key in self.recv_keys:
                     self.recvMQ.queue_declare(queue=recv_key, durable=True)
@@ -177,15 +178,13 @@ class MQ:
                     self.send_data.append({"queue": "post", "data": post})
 
             if data["table_type"] == "goods_comment":
-                aim_good_url = data["url"]
-                if data['comment_type']=='goods':
-                    aim_good_id = data["commented_id"]
-                elif data['comment_type']=='user':
-                    aim_good_id = data["user_name"]  #此处因clickhoubse中user_id存的不对，所以拿user_name暂且当唯一
-                good = client.pre_query(aim_good_id,aim_good_url)
+                if data['comment_type'] == 'goods':
+                    good = self.clickhouse.pre_query(data["commented_id"], data["url"], "id")
+                elif data['comment_type'] == 'user':
+                    good = self.clickhouse.pre_query(data["user_name"], data["url"], "user_name")
 
                 if not good:
-                    # 查询出错 或 没有查询到
+                    # 查询出错 或 没有查询到 推送到备用队列
                     self.push("aw_"+data["table_type"], json.dumps(data))
                     return None
 
@@ -198,7 +197,7 @@ class MQ:
                     logging.error(f"ERROR: 查询到多个商品数据")
                     return
                 # 合并后的数据加入上传mq的队列
-                good_cmb = aw_transfer.good_cmb2(good[0],data)
+                good_cmb = aw_transfer.good_cmb2(good[0], data)
                 self.send_data.append({"queue": "goods", "data": good_cmb})
 
             self.recv_count += 1  # 增加计数
@@ -230,31 +229,6 @@ class MQ:
                 )
             else:
                 self.send_data.append(element)
-
-                """
-            try:
-                # 检查队列是否存在
-                if not self.sendMQ.queue_declare(queue=routing_key, durable=True).method.queue:
-                    logging.info(f"Queue '{routing_key}' does not exist. Creating it.")
-                    # 创建队列，durable=True 表示队列将在 broker 重启后依然存在
-                    self.sendMQ.exchange_declare(exchange="scrapy", exchange_type="direct", durable=True)
-                    self.sendMQ.queue_declare(queue=routing_key, durable=True)
-                    self.sendMQ.queue_bind(exchange="scrapy", queue=routing_key, routing_key=routing_key)
-
-                # 发布消息到队列
-                self.sendMQ.basic_publish(exchange='', routing_key=routing_key, body=message)
-                # self.send_count += 1  # 初始化计数器
-                self.send_count[routing_key+'_num'] += 1  # 增加计数
-                logging.info(f"------发送数据{routing_key}，累计发送{routing_key}次数: {self.send_count[routing_key+'_num']}------\n")
-
-            except Exception as e:
-                logging.error("mq通道关闭" + str(e))
-                self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password, "/")
-                # TODO 异常处理需要修改，将发送失败数据添加队列
-                self.send_data.append(element)
-                break
-                # self.sendMQ.basic_publish(exchange='', routing_key=routing_key, body=message)
-                """
 
     def push(self, routing_key, message):
         try:
@@ -300,9 +274,10 @@ class MQ:
 
 if __name__ == "__main__":
     mq = MQ()
-    client = ClickHouse()
     try:
         mq.mqRecv()
+        mq.close()
+        mq.connection()
     except Exception as e:
         logging.error(f"ERROR: {e}")
         mq.close()
