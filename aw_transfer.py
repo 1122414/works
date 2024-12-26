@@ -52,12 +52,21 @@ def site3(service):
         "user_info": "{}",
     }
 
-    site["domain"] = (
-        service["url"][: service["url"].index("//") + 2] + service["domain"]
-    )
+    try:
+        site["url"] = service["url"]
+        site["domain"] = service["url"][: service["url"].index("//") + 2] + service["domain"]
+    except Exception as e:
+        if 'url' in service:
+            # print(service["url"])
+            site["domain"] = "http://" + service["domain"]
+        else:
+            print(f"{service['domain']}该站近点没有url")
+            site["domain"] = "http://" + service["domain"]
+            site["url"] = "http://" + service["domain"]
+
+
     site["lang"] = "en_us" if service["language"] == "en" else service["language"]
     site["net_type"] = service["net_type"]
-    site["url"] = service["url"]
     site["first_publish_time"] = service["request_time"]
     site["last_publish_time"] = service["time"]
 
@@ -76,16 +85,23 @@ def site3(service):
             site["is_recent_online"] = "offline"
 
     except Exception as e:
-        given_time = datetime.strptime(service["time"], "%Y-%m-%dT%H:%M:%S")
 
         # 获取当前时间
         current_time = datetime.now()
+        try:
+            given_time = datetime.strptime(service["time"], "%Y-%m-%dT%H:%M:%S")
+        except Exception as e:
+            try:
+                given_time = datetime.strptime(service["time"], "%Y-%m-%dT%H:%M:%S.%f")
+            except Exception as e:
+                print(service["time"])
+                given_time = current_time
 
         # 计算一周的时间差
         one_week = timedelta(days=7)
 
         # 判断给定时间是否在一周以内
-        if current_time - given_time < one_week:
+        if current_time - given_time < one_week and current_time != given_time:
             site["is_recent_online"] = "online"
         else:
             site["is_recent_online"] = "offline"
@@ -288,7 +304,18 @@ def user2(user):
         "lang": "",
     }
 
-    auser["domain"] = user["url"][: user["url"].index("//") + 2] + user["domain"]
+    try:
+        auser["url"] = user["url"]
+        auser["domain"] = user["url"][: user["url"].index("//") + 2] + user["domain"]
+    except Exception as e:
+        if 'url' in user:
+            # print(user["url"])
+            auser["domain"] = "http://" + user["domain"]
+        else:
+            print(f"{user['domain']}该站近点没有url")
+            auser["domain"] = "http://" + user["domain"]
+            auser["url"] = "http://" + user["domain"]
+
     auser["uuid"] = user["uuid"]
     auser["net_type"] = user["net_type"]
     auser["user_name"] = user["user_name"]
