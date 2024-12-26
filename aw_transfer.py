@@ -61,19 +61,34 @@ def site3(service):
     site["first_publish_time"] = service["request_time"]
     site["last_publish_time"] = service["time"]
 
-    given_time = datetime.strptime(service["time"], "%Y-%m-%d %H:%M:%S")
+    try:
+        given_time = datetime.strptime(service["time"], "%Y-%m-%d %H:%M:%S")
+        # 获取当前时间
+        current_time = datetime.now()
 
-    # 获取当前时间
-    current_time = datetime.now()
+        # 计算一周的时间差
+        one_week = timedelta(days=7)
 
-    # 计算一周的时间差
-    one_week = timedelta(days=7)
+        # 判断给定时间是否在一周以内
+        if current_time - given_time < one_week:
+            site["is_recent_online"] = "online"
+        else:
+            site["is_recent_online"] = "offline"
 
-    # 判断给定时间是否在一周以内
-    if current_time - given_time < one_week:
-        site["is_recent_online"] = "online"
-    else:
-        site["is_recent_online"] = "offline"
+    except Exception as e:
+        given_time = datetime.strptime(service["time"], "%Y-%m-%dT%H:%M:%S")
+
+        # 获取当前时间
+        current_time = datetime.now()
+
+        # 计算一周的时间差
+        one_week = timedelta(days=7)
+
+        # 判断给定时间是否在一周以内
+        if current_time - given_time < one_week:
+            site["is_recent_online"] = "online"
+        else:
+            site["is_recent_online"] = "offline"
 
     site["index_url"] = service["url"]
     site["description"] = service["response_keywords"]
