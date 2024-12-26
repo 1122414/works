@@ -31,6 +31,7 @@ class ClickHouse:
         # password = 'inspur@123'                  # 默认没有密码，若有密码请填写
         self.password = password              # 默认没有密码，若有密码请填写
         self.database = database
+        # self.connection()
 
     def connection(self):
         self.client = Client(
@@ -43,7 +44,7 @@ class ClickHouse:
     
     def pre_query(self, id, url, mode):
         query = f"select * from mid_deepweb_goods where '{mode}'='{id}' and url='{url}'"
-        result = client.execute_query(query=query)
+        result = self.execute_query(query=query)
         return result
 
     def execute_query(self, query: str, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
@@ -114,6 +115,7 @@ class MQ:
             try:
                 self.recvMQ = self.mqinit(self.recv_ip, self.recv_port, self.recv_username, self.recv_password, self.recv_vhost)
                 self.sendMQ = self.mqinit(self.send_ip, self.send_port, self.send_username, self.send_password, self.send_vhost)
+                self.clickhouse.connection()
 
                 logging.info("mq连接成功")
                 break
@@ -159,6 +161,7 @@ class MQ:
         except Exception as e:
             logging.error(f"ERROR: 站点数据处理异常: {e} ")
             traceback.print_exc()
+            self.push("dark_service", json.dumps(data))
 
     def recv(self, ch, method, properties, body):
         try:
